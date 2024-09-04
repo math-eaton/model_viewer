@@ -6,6 +6,7 @@ export function horseLoader(containerId) {
     let scene, camera, renderer, controls, pivot;
     let animationFrameId;
     let isRotationEnabled = true;
+    let wireframe = true;
 
     const models = [
         // { name: 'horse', url: '/obj/horse.obj', cameraPosition: { desktop: [-90, 0, 0], mobile: [-100, 5, 10000] } },
@@ -27,7 +28,7 @@ export function horseLoader(containerId) {
         if (isMobile) {
             camera = new THREE.PerspectiveCamera(35, (window.innerWidth / window.innerHeight) * 2, 0.1, 1000);
         } else {
-            camera = new THREE.PerspectiveCamera(35, (window.innerWidth / window.innerHeight) / 2, 0.1, 1000);
+            camera = new THREE.PerspectiveCamera(35, (window.innerWidth / window.innerHeight), 0.1, 1000);
         }
 
         // Renderer
@@ -48,7 +49,7 @@ export function horseLoader(containerId) {
         // controls.enablePan = false;
 
         // Light
-        const ambientLight = new THREE.AmbientLight(0x404040, 1);
+        const ambientLight = new THREE.AmbientLight(0x404040, 15);
         scene.add(ambientLight);
 
         const directionalLight = new THREE.DirectionalLight(0xffffff, 5);
@@ -73,22 +74,26 @@ export function horseLoader(containerId) {
 
     function loadObjModel(url, onLoad, onError) {
         const loader = new OBJLoader();
+
+    
         loader.load(url, obj => {
             obj.traverse(function (child) {
                 if (child.isMesh) {
                     child.material = new THREE.MeshStandardMaterial({
-                        color: 0xff0000,
-                        wireframe: false,
+                        color: 0x0000ff,
+                        opacity: 0.95,
+                        wireframe: wireframe,
                         depthWrite: false,
                         stencilWrite: true,
                         stencilZPass: THREE.InvertStencilOp,
-                        alphaTest: 0.5,                
+                        alphaHash: true,                
                         blending: THREE.CustomBlending,
                         blendEquation: THREE.MaxEquation,
                         blendSrc: THREE.OneMinusSrcColorFactor,
                         blendDst: THREE.OneMinusConstantColorFactor
                         
                     });
+
                 }
             });
             onLoad(obj);
@@ -107,6 +112,7 @@ export function horseLoader(containerId) {
             if (child.geometry) child.geometry.dispose();
             if (child.material) child.material.dispose();
         }
+        
 
         // Center and scale the original model
         const boundingBox = new THREE.Box3().setFromObject(obj);
@@ -147,10 +153,11 @@ export function horseLoader(containerId) {
             if (child.isMesh) {
                 child.material = new THREE.MeshStandardMaterial({
                     color: 0xffffff,
-                    wireframe: false,
+                    wireframe: wireframe,
                     depthTest: false,
                     stencilWrite: true,
-                    alphaTest: 0.5,
+                    opacity: 0.9,
+                    alphaHash: true,
                     stencilFunc: THREE.EqualStencilFunc,
                     stencilRef: 0,                
                     blending: THREE.CustomBlending,
@@ -163,6 +170,7 @@ export function horseLoader(containerId) {
 
         pivot.add(obj);
         pivot.add(clone);
+
 
         camera.lookAt(center);
 
@@ -181,7 +189,16 @@ export function horseLoader(containerId) {
     function animate() {
         animationFrameId = requestAnimationFrame(animate);
         if (isRotationEnabled) {
-            pivot.rotation.y += 0.0005;
+            pivot.rotation.y += 0.0002;
+            if (pivot.children.length > 0) {
+                pivot.children[0].rotation.y += 0.0002; // Rotate the original object
+                pivot.children[1].rotation.y -= 0.0003; // Rotate the clone object in the opposite direction
+                // pivot.children[0].rotation.x += 0.0008; // og
+                pivot.children[1].rotation.z -= 0.0001;  // clone
+            }
+        }
+        else if (!isRotationEnabled) {
+            pivot.rotation.y += 0.0;
             if (pivot.children.length > 0) {
                 pivot.children[0].rotation.y += 0.0002; // Rotate the original object
                 pivot.children[1].rotation.y -= 0.0003; // Rotate the clone object in the opposite direction
@@ -219,6 +236,25 @@ export function horseLoader(containerId) {
         }
     });
 
+
+    window.addEventListener('keydown', (event) => {
+        if (event.key === 'W' || event.key === 'w') {
+            wireframe = !wireframe; // Toggle wireframe state
+            console.log(wireframe);
+    
+            // Update the wireframe state for all meshes in the pivot group
+            pivot.traverse(function (child) {
+                if (child.isMesh) {
+                    child.material.wireframe = wireframe; // Apply the new wireframe state
+                    child.material.needsUpdate = true; // Ensure the material gets updated
+                }
+            });
+    
+            // Re-render the scene
+            renderer.render(scene, camera);
+        }
+    });
+        
     // Initialize and start the animation
     init();
 
