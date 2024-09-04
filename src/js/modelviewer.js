@@ -1,17 +1,59 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
+import { AsciiEffect } from 'three/examples/jsm/effects/AsciiEffect.js';
 
 export function horseLoader(containerId) {
-    let scene, camera, renderer, controls, pivot;
+    let scene, camera, renderer, controls, pivot, effect;
     let animationFrameId;
     let isRotationEnabled = true;
-    let wireframe = true;
+    let wireframe = false;
+    let isAsciiEnabled = false; // Start with regular renderer
+    let asciiAdded = false; // Track whether the AsciiEffect DOM element is added
+
+    // Event listener to toggle the Ascii effect on/off with the "A" key
+    window.addEventListener('keydown', (event) => {
+        if (event.key === 'A' || event.key === 'a') {  // Toggle the Ascii effect
+            isAsciiEnabled = !isAsciiEnabled;
+
+            const container = document.getElementById(containerId);
+
+            if (isAsciiEnabled && !asciiAdded) {
+                // Enable Ascii effect
+                container.removeChild(renderer.domElement);
+                container.appendChild(effect.domElement);
+                controls.dispose(); // Dispose the old controls
+                controls = new OrbitControls(camera, effect.domElement); // Reinitialize controls for Ascii effect
+                controls.enableDamping = true;
+                controls.dampingFactor = 0.25;
+                controls.enableZoom = true;
+                controls.zoomSpeed = 0.2;
+                controls.rotateSpeed = 0.5;
+                controls.minDistance = 0.5;
+                controls.maxDistance = 4.5;
+                asciiAdded = true;
+            } else if (!isAsciiEnabled && asciiAdded) {
+                // Disable Ascii effect and switch back to WebGLRenderer
+                container.removeChild(effect.domElement);
+                container.appendChild(renderer.domElement);
+                controls.dispose(); // Dispose the old controls
+                controls = new OrbitControls(camera, renderer.domElement); // Reinitialize controls for WebGLRenderer
+                controls.enableDamping = true;
+                controls.dampingFactor = 0.25;
+                controls.enableZoom = true;
+                controls.zoomSpeed = 0.2;
+                controls.rotateSpeed = 0.5;
+                controls.minDistance = 0.5;
+                controls.maxDistance = 4.5;
+                asciiAdded = false;
+            }
+        }
+    });
 
     const models = [
         // { name: 'horse', url: '/obj/horse.obj', cameraPosition: { desktop: [-90, 0, 0], mobile: [-100, 5, 10000] } },
         // { name: 'hand', url: '/obj/hand.obj', cameraPosition: { desktop: [-120, -50, 200], mobile: [-20, 15, 500] } },
-        { name: 'bunny', url: '/model_viewer/obj/bunny.obj', cameraPosition: { desktop: [-120, -50, 200], mobile: [-20, 15, 500] } }
+        { name: 'bunny', url: '/model_viewer/obj/bunny_scaled.obj', cameraPosition: { desktop: [-1, 50, 200], mobile: [-20, 15, 500] } }
 
     ];
 
@@ -22,20 +64,25 @@ export function horseLoader(containerId) {
     function init() {
         // Scene
         scene = new THREE.Scene();
+
         let isMobile = Math.min(window.innerWidth, window.innerHeight) < 600;
 
-        // Camera
-        if (isMobile) {
-            camera = new THREE.PerspectiveCamera(35, (window.innerWidth / window.innerHeight) * 2, 0.1, 1000);
-        } else {
-            camera = new THREE.PerspectiveCamera(35, (window.innerWidth / window.innerHeight), 0.1, 1000);
-        }
+        // Camera setup
+        camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 2;
 
         // Renderer
         renderer = new THREE.WebGLRenderer({ alpha: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setClearColor(0xC0C0C0, 0);
-        document.getElementById(containerId).appendChild(renderer.domElement);
+        document.getElementById(containerId).appendChild(renderer.domElement); // Append renderer at the start
+
+        // AsciiEffect
+        const customCharSet = ' ♡❣♥☺x6☹%&*⛆@#❤☺☻  ';
+        effect = new AsciiEffect(renderer, customCharSet, { invert: false, resolution: 0.25, scale: 1.0, color: false });
+        effect.setSize(window.innerWidth, window.innerHeight);
+        effect.domElement.style.color = 'black';
+        effect.domElement.style.backgroundColor = 'white';
 
         // OrbitControls
         controls = new OrbitControls(camera, renderer.domElement);
@@ -46,10 +93,9 @@ export function horseLoader(containerId) {
         controls.rotateSpeed = 0.5;
         controls.minDistance = 0.5;
         controls.maxDistance = 4.5;
-        // controls.enablePan = false;
 
         // Light
-        const ambientLight = new THREE.AmbientLight(0x404040, 15);
+        const ambientLight = new THREE.AmbientLight(0x404040, 150);
         scene.add(ambientLight);
 
         const directionalLight = new THREE.DirectionalLight(0xffffff, 5);
@@ -62,7 +108,6 @@ export function horseLoader(containerId) {
 
         // Load a random model
         const model = getRandomModel();
-        console.log(model.name)
         loadObjModel(model.url, obj => switchToObjModel(obj, model.cameraPosition, model.name), handleModelError);
 
         // Handle window resize
@@ -79,14 +124,16 @@ export function horseLoader(containerId) {
         loader.load(url, obj => {
             obj.traverse(function (child) {
                 if (child.isMesh) {
-                    child.material = new THREE.MeshStandardMaterial({
+                    child.material = new THREE.MeshPhongMaterial({
                         color: 0x0000ff,
                         opacity: 0.95,
                         wireframe: wireframe,
                         depthWrite: false,
                         stencilWrite: true,
+                        shininess: 250,
+                        specular: 0xffffff,
                         stencilZPass: THREE.InvertStencilOp,
-                        alphaHash: true,                
+                        alphaHash: false,                
                         blending: THREE.CustomBlending,
                         blendEquation: THREE.MaxEquation,
                         blendSrc: THREE.OneMinusSrcColorFactor,
@@ -151,13 +198,15 @@ export function horseLoader(containerId) {
         // Apply the same blending mode to the clone
         clone.traverse(function (child) {
             if (child.isMesh) {
-                child.material = new THREE.MeshStandardMaterial({
+                child.material = new THREE.MeshPhongMaterial({
                     color: 0xffffff,
                     wireframe: wireframe,
                     depthTest: false,
                     stencilWrite: true,
                     opacity: 0.9,
-                    alphaHash: true,
+                    alphaHash: false,
+                    shininess: 100,
+                    specular: 0xffffff,
                     stencilFunc: THREE.EqualStencilFunc,
                     stencilRef: 0,                
                     blending: THREE.CustomBlending,
@@ -200,14 +249,20 @@ export function horseLoader(containerId) {
         else if (!isRotationEnabled) {
             pivot.rotation.y += 0.0;
             if (pivot.children.length > 0) {
-                pivot.children[0].rotation.y += 0.0002; // Rotate the original object
-                pivot.children[1].rotation.y -= 0.0003; // Rotate the clone object in the opposite direction
+                pivot.children[0].rotation.y += 0.0035; // Rotate the original object
+                pivot.children[1].rotation.y -= 0.005; // Rotate the clone object in the opposite direction
                 // pivot.children[0].rotation.x += 0.0008; // og
-                pivot.children[1].rotation.z -= 0.0001;  // clone
+                pivot.children[1].rotation.z -= 0.0006;  // clone
             }
         }
         controls.update();
-        renderer.render(scene, camera);
+
+        // Render based on whether ASCII effect is enabled
+        if (isAsciiEnabled) {
+            effect.render(scene, camera); // Render with ASCII
+        } else {
+            renderer.render(scene, camera); // Render with regular WebGLRenderer
+        }
     }
 
     function dispose() {
