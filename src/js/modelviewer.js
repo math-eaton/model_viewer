@@ -10,7 +10,7 @@ export function horseLoader(containerId) {
     const models = [
         // { name: 'horse', url: '/obj/horse.obj', cameraPosition: { desktop: [-90, 0, 0], mobile: [-100, 5, 10000] } },
         // { name: 'hand', url: '/obj/hand.obj', cameraPosition: { desktop: [-120, -50, 200], mobile: [-20, 15, 500] } },
-        { name: 'bunny', url: '/obj/bunny.obj', cameraPosition: { desktop: [-120, -50, 200], mobile: [-20, 15, 500] } }
+        { name: 'bunny', url: '/model_viewer/obj/bunny.obj', cameraPosition: { desktop: [-120, -50, 200], mobile: [-20, 15, 500] } }
 
     ];
 
