@@ -9,8 +9,8 @@ const visualizations = [
 
 
 // hex codes for random background colors
-// const hexCodes = ['#959595', '#3a6ea5', '#444444', '#c25237'];
-const hexCodes = ['#3a6ea5', '#444444', '#c25237', '#524bd0', '#344242'];
+const hexCodes = ['#4c90d9', '#e275de', '#de4c27'];
+// const hexCodes = ['#3a6ea5', '#444444', '#c25237', '#524bd0', '#344242', '#ffffff', '#000000'];
 
 let activeColor = null;
 let activeVisualization = null;

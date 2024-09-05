@@ -78,10 +78,10 @@ export function horseLoader(containerId) {
         document.getElementById(containerId).appendChild(renderer.domElement); // Append renderer at the start
 
         // AsciiEffect
-        const customCharSet = ' ♡❣♥☺x6☹%&*⛆@#❤☺☻  ';
-        effect = new AsciiEffect(renderer, customCharSet, { invert: false, resolution: 0.25, scale: 1.0, color: false });
+        const customCharSet = ' g❣♥cx6☹%!&*m☺☻  ';
+        effect = new AsciiEffect(renderer, customCharSet, { invert: true, resolution: 0.4, scale: 1.0, color: false });
         effect.setSize(window.innerWidth, window.innerHeight);
-        effect.domElement.style.color = 'black';
+        effect.domElement.style.color = 'blue';
         effect.domElement.style.backgroundColor = 'white';
 
         // OrbitControls
@@ -95,11 +95,11 @@ export function horseLoader(containerId) {
         controls.maxDistance = 4.5;
 
         // Light
-        const ambientLight = new THREE.AmbientLight(0x404040, 150);
+        const ambientLight = new THREE.AmbientLight(0x404040, 500);
         scene.add(ambientLight);
 
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 5);
-        directionalLight.position.set(1, 1, 1).normalize();
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 25);
+        directionalLight.position.set(5, 5, -5).normalize();
         scene.add(directionalLight);
 
         // Create a pivot group
@@ -125,13 +125,13 @@ export function horseLoader(containerId) {
             obj.traverse(function (child) {
                 if (child.isMesh) {
                     child.material = new THREE.MeshPhongMaterial({
-                        color: 0x0000ff,
-                        opacity: 0.95,
+                        color: 0x004DEB,
+                        opacity: 0.98,
                         wireframe: wireframe,
                         depthWrite: false,
                         stencilWrite: true,
-                        shininess: 250,
-                        specular: 0xffffff,
+                        shininess: 100,
+                        // specular: 0xffffff,
                         stencilZPass: THREE.InvertStencilOp,
                         alphaHash: false,                
                         blending: THREE.CustomBlending,
@@ -187,7 +187,7 @@ export function horseLoader(containerId) {
             clone.rotation.z = Math.PI / 5;    
         }
         else if (name == "bunny"){
-            clone.position.set(1.2, 0.35, -1.1);
+            clone.position.set(1.2, 0.35, -0.1);
             clone.rotation.x = Math.PI / 9;
             clone.rotation.y = Math.PI / 4;
             clone.rotation.z = Math.PI / 5;    
@@ -199,21 +199,21 @@ export function horseLoader(containerId) {
         clone.traverse(function (child) {
             if (child.isMesh) {
                 child.material = new THREE.MeshPhongMaterial({
-                    color: 0xffffff,
+                    color: 0xEB2500,
                     wireframe: wireframe,
                     depthTest: false,
                     stencilWrite: true,
-                    opacity: 0.9,
+                    opacity: 0.98,
                     alphaHash: false,
                     shininess: 100,
                     specular: 0xffffff,
                     stencilFunc: THREE.EqualStencilFunc,
                     stencilRef: 0,                
                     blending: THREE.CustomBlending,
-                    blendEquation: THREE.AddEquation,
-                    blendSrc: THREE.OneFactor,
-                    blendDst: THREE.OneFactor
-                });
+                    blendEquation: THREE.MaxEquation,
+                    blendSrc: THREE.OneMinusSrcColorFactor,
+                    blendDst: THREE.OneMinusConstantColorFactor
+            });
             }
         });
 
@@ -249,8 +249,8 @@ export function horseLoader(containerId) {
         else if (!isRotationEnabled) {
             pivot.rotation.y += 0.0;
             if (pivot.children.length > 0) {
-                pivot.children[0].rotation.y += 0.0035; // Rotate the original object
-                pivot.children[1].rotation.y -= 0.005; // Rotate the clone object in the opposite direction
+                pivot.children[0].rotation.y += 0.00035; // Rotate the original object
+                pivot.children[1].rotation.y -= 0.0005; // Rotate the clone object in the opposite direction
                 // pivot.children[0].rotation.x += 0.0008; // og
                 pivot.children[1].rotation.z -= 0.0006;  // clone
             }
