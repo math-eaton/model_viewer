@@ -37,6 +37,7 @@ body {
   /* mix-blend-mode:exclusion; */
   mix-blend-mode:hue;
   filter: brightness(0.8) contrast(0.666);
+  cursor: none;
 }
 
 .text {
@@ -258,3 +259,6 @@ button {
   
 }
 
+*{
+  cursor: none;
+}

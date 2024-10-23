@@ -1,10 +1,11 @@
 ////////
-import { horseLoader } from "./modelviewer.js";
+// import { horseLoader } from "./modelviewer.js";
+import { pointCloudLoader } from "./cloudviewer.js";
 const isMobile = Math.min(window.innerWidth, window.innerHeight) < 768;
 
 // visualizations with their respective container IDs
 const visualizations = [
-  { func: horseLoader, container: "modelContainer1" },
+  { func: pointCloudLoader, container: "modelContainer1" },
 ];
 
 
