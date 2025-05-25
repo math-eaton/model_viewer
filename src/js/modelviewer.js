@@ -367,7 +367,17 @@ export function horseLoader(containerId, guiCallbacks = null) {
         renderer = new THREE.WebGLRenderer({ alpha: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setClearColor(0xC0C0C0, 0);
-        document.getElementById(containerId).appendChild(renderer.domElement); // Append renderer at the start
+        
+        // Configure renderer canvas for touch events
+        const canvas = renderer.domElement;
+        canvas.style.touchAction = 'none';
+        canvas.style.userSelect = 'none';
+        canvas.style.webkitUserSelect = 'none';
+        canvas.style.webkitTouchCallout = 'none';
+        canvas.style.position = 'relative';
+        canvas.style.zIndex = '1';
+        
+        document.getElementById(containerId).appendChild(canvas);
 
         // AsciiEffect
         const customCharSet = ' g❣♥cx6☹%!&*m☺☻  ';
@@ -375,6 +385,14 @@ export function horseLoader(containerId, guiCallbacks = null) {
         effect.setSize(window.innerWidth, window.innerHeight);
         effect.domElement.style.color = 'blue';
         effect.domElement.style.backgroundColor = 'white';
+        
+        // Configure ASCII effect canvas for touch events
+        effect.domElement.style.touchAction = 'none';
+        effect.domElement.style.userSelect = 'none';
+        effect.domElement.style.webkitUserSelect = 'none';
+        effect.domElement.style.webkitTouchCallout = 'none';
+        effect.domElement.style.position = 'relative';
+        effect.domElement.style.zIndex = '1';
         
         // Ensure ASCII effect has the same positioning as the WebGL renderer
         // effect.domElement.style.position = 'absolute';

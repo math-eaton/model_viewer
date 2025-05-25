@@ -20,6 +20,11 @@ pre, code, canvas {
   padding: 0 !important;
   border: none !important;
   outline: none !important;
+  display: block;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .text {
@@ -56,8 +61,12 @@ a:active {
   scale: 0.95;
 }
 
-button {
-
+canvas {
+  display: block;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 
@@ -76,8 +85,7 @@ button {
 }
 
 #modelContainer1 {
-
-  z-index: -1;
+  z-index: 1;
 }
 
 
@@ -92,10 +100,27 @@ button {
   .vis-container {
     width: 100vw;
     height: 100vh;
+    touch-action: none;
+    position: relative;
+    z-index: 1;
   }
 
+  #modelContainer1 {
+    touch-action: none;
+    position: relative;
+    z-index: 1;
+  }
 
-  
+  #modelContainer1 canvas {
+    touch-action: none !important;
+    position: relative !important;
+    z-index: 1 !important;
+  }
+
+  .gui-container {
+    width: 250px;
+    z-index: 200;
+  }
 }
 
 .gui-container {
@@ -108,6 +133,9 @@ button {
   z-index: 190;
   isolation: isolate;
   filter: none;
+}
+
+.gui-container > * {
   pointer-events: auto;
 }
 
@@ -129,4 +157,10 @@ button {
   height:auto;
   margin: 0;
   padding: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.figure .vis-container {
+  pointer-events: auto;
 }
