@@ -65,9 +65,6 @@ export function exampleVisualization(containerId, guiCallbacks = null) {
             mesh.material.transparent = opacity < 1;
         });
         
-        // Note: You can ignore callbacks you don't need
-        // For example, if your visualization doesn't have a clone object,
-        // just don't set the clone-related callbacks
     }
     
     function syncInitialValues(guiCallbacks) {
@@ -80,7 +77,6 @@ export function exampleVisualization(containerId, guiCallbacks = null) {
             lightIntensity: 44,
             modelColor: '#00ff00',
             modelOpacity: 1.0
-            // Only include the properties your visualization uses
         });
     }
     
@@ -114,15 +110,3 @@ export function exampleVisualization(containerId, guiCallbacks = null) {
     
     return { dispose };
 }
-
-/*
-To use this pattern in main.js, add to your visualizations array:
-
-{
-    func: exampleVisualization,
-    container: "exampleContainer",
-    supportsGui: true
-}
-
-The GUI will automatically work with your visualization!
-*/

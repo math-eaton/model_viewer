@@ -25,7 +25,8 @@ let activeVisualization = null;
 function changeBackgroundColor() {
   let randomColor;
   do {
-    randomColor = hexCodes[Math.floor(Math.random() * hexCodes.length)];
+    // Generate a random hex color with 100% opacity
+    randomColor = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
   } while (randomColor === activeColor);
 
   document.body.style.backgroundColor = randomColor;
@@ -106,6 +107,9 @@ function switchBackgroundColor() {
   }
 }
 
+// Expose switchBackgroundColor to global scope for GUI access
+window.switchBackgroundColor = switchBackgroundColor;
+
 // change cursor on mousedown and mouseup
 function setupCustomCursor() {
   document.addEventListener('mousedown', () => {
@@ -121,9 +125,7 @@ document.addEventListener("DOMContentLoaded", () => {
   changeBackgroundColor();
   loadRandomVisualization();
   setupCustomCursor();
-  
-  document.body.appendChild(testButton);
-  
+    
   // Add keyboard shortcut to toggle GUI (G key)
   document.addEventListener('keydown', (event) => {
     if (event.key === 'G' || event.key === 'g') {

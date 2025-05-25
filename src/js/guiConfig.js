@@ -1,28 +1,44 @@
 import { GUI } from 'dat.gui';
+import { HalfFloatType } from 'three';
 
 export class GuiConfig {
     constructor() {
-        // Create a container for the GUI to isolate it from page styling
         this.container = document.createElement('div');
         this.container.className = 'gui-container';
         document.body.appendChild(this.container);
                 
         this.gui = new GUI({ 
             autoPlace: false,
-            closed: true  // Initialize in closed mode
+            closed: true 
         });
         this.container.appendChild(this.gui.domElement);
+        
+        setTimeout(() => {
+            if (this.gui.closed) {
+                this.gui.close(); 
+            }
+        }, 0);
         
         this.config = {
             backgroundColor: '#4c90d9',
             lightColor: '#ffffff',
             lightIntensity: 44,
             ambientLightIntensity: 5,
+            dropShadowColor: '#0000ff',
             modelColor: '#00EB79',
             cloneColor: '#c91515',
             modelOpacity: 0.98,
-            cloneOpacity: 0.0,
-            mixBlendMode: 'hue'
+            cloneOpacity: 0.5,
+            cloneDistance: 1.0,
+            mixBlendMode: 'hue',
+            selectedModel: 'horse'
+        };
+        
+        // Mobile controls (interactive toggles)
+        this.mobileControls = {
+            toggleAscii: false,
+            toggleRotation: true,
+            toggleWireframe: false
         };
         
         this.callbacks = {
@@ -30,28 +46,49 @@ export class GuiConfig {
             onLightColorChange: null,
             onLightIntensityChange: null,
             onAmbientLightIntensityChange: null,
+            onDropShadowColorChange: null,
             onModelColorChange: null,
             onCloneColorChange: null,
             onModelOpacityChange: null,
             onCloneOpacityChange: null,
-            onMixBlendModeChange: null
+            onCloneDistanceChange: null,
+            onMixBlendModeChange: null,
+            onModelChange: null,
+            onToggleAscii: null,
+            onToggleRotation: null,
+            onToggleWireframe: null,
+            onRandomizeColor: null
         };
         
         this.initGui();
     }
     
     initGui() {
-        // Background controls
-        const backgroundFolder = this.gui.addFolder('Background');
-        backgroundFolder.addColor(this.config, 'backgroundColor')
-            .name('Color')
+        const colorFolder = this.gui.addFolder('Color');
+        colorFolder.addColor(this.config, 'backgroundColor')
+            .name('bg')
             .onChange((value) => {
                 if (this.callbacks.onBackgroundColorChange) {
                     this.callbacks.onBackgroundColorChange(value);
                 }
             });
+            
+        colorFolder.addColor(this.config, 'modelColor')
+            .name('Model Color')
+            .onChange((value) => {
+                if (this.callbacks.onModelColorChange) {
+                    this.callbacks.onModelColorChange(value);
+                }
+            });
+            
+        colorFolder.addColor(this.config, 'cloneColor')
+            .name('Clone Color')
+            .onChange((value) => {
+                if (this.callbacks.onCloneColorChange) {
+                    this.callbacks.onCloneColorChange(value);
+                }
+            });
         
-        // Lighting controls
         const lightingFolder = this.gui.addFolder('Lighting');
         lightingFolder.addColor(this.config, 'lightColor')
             .name('Light Color')
@@ -76,14 +113,24 @@ export class GuiConfig {
                     this.callbacks.onAmbientLightIntensityChange(value);
                 }
             });
+            
+        lightingFolder.addColor(this.config, 'dropShadowColor')
+            .name('Drop Shadow Color')
+            .onChange((value) => {
+                if (this.callbacks.onDropShadowColorChange) {
+                    this.callbacks.onDropShadowColorChange(value);
+                }
+            });
         
         // Model controls
         const modelFolder = this.gui.addFolder('Model');
-        modelFolder.addColor(this.config, 'modelColor')
-            .name('Model Color')
+        
+        // Model selector dropdown
+        modelFolder.add(this.config, 'selectedModel', ['horse', 'bunny', 'hand'])
+            .name('Model')
             .onChange((value) => {
-                if (this.callbacks.onModelColorChange) {
-                    this.callbacks.onModelColorChange(value);
+                if (this.callbacks.onModelChange) {
+                    this.callbacks.onModelChange(value);
                 }
             });
             
@@ -95,14 +142,6 @@ export class GuiConfig {
                 }
             });
         
-        modelFolder.addColor(this.config, 'cloneColor')
-            .name('Clone Color')
-            .onChange((value) => {
-                if (this.callbacks.onCloneColorChange) {
-                    this.callbacks.onCloneColorChange(value);
-                }
-            });
-            
         modelFolder.add(this.config, 'cloneOpacity', 0, 1)
             .name('Clone Opacity')
             .onChange((value) => {
@@ -111,14 +150,58 @@ export class GuiConfig {
                 }
             });
         
-        // Mix-blend-mode control with radio button options
-        modelFolder.add(this.config, 'mixBlendMode', ['hue', 'saturation', 'exclusion'])
+        modelFolder.add(this.config, 'cloneDistance', 0, 3)
+            .name('Clone Distance')
+            .onChange((value) => {
+                if (this.callbacks.onCloneDistanceChange) {
+                    this.callbacks.onCloneDistanceChange(value);
+                }
+            });
+        
+        
+        const fxFolder = this.gui.addFolder('fx');
+        
+        fxFolder.add(this.mobileControls, 'toggleAscii')
+            .name('ASCII')
+            .onChange((value) => {
+                if (this.callbacks.onToggleAscii) {
+                    this.callbacks.onToggleAscii(value);
+                }
+            });
+            
+        fxFolder.add(this.mobileControls, 'toggleRotation')
+            .name('Rotation')
+            .onChange((value) => {
+                if (this.callbacks.onToggleRotation) {
+                    this.callbacks.onToggleRotation(value);
+                }
+            });
+            
+        fxFolder.add(this.mobileControls, 'toggleWireframe')
+            .name('Wireframe')
+            .onChange((value) => {
+                if (this.callbacks.onToggleWireframe) {
+                    this.callbacks.onToggleWireframe(value);
+                }
+            });
+
+        fxFolder.add(this.config, 'mixBlendMode', ['hue', 'saturation', 'exclusion', 'luminosity', 'color', 'multiply', 'screen', 'overlay', 'darken', 'lighten', 'difference'])
             .name('Blend Mode')
             .onChange((value) => {
                 if (this.callbacks.onMixBlendModeChange) {
                     this.callbacks.onMixBlendModeChange(value);
                 }
             });
+            
+        const randomColorButton = {
+            randomize: () => {
+                if (this.callbacks.onRandomizeColor) {
+                    this.callbacks.onRandomizeColor();
+                }
+            }
+        };
+        fxFolder.add(randomColorButton, 'randomize')
+            .name('Random Background Color');
         
     }
     
@@ -143,19 +226,19 @@ export class GuiConfig {
             if (this.config.hasOwnProperty(key)) {
                 this.config[key] = values[key];
             }
+            if (this.mobileControls.hasOwnProperty(key)) {
+                this.mobileControls[key] = values[key];
+            }
         });
         this.gui.updateDisplay();
     }
     
-    // Method to toggle GUI using dat.gui's native functionality
     toggleVisibility() {
-        // Use dat.gui's native close/open functionality
         if (this.gui.closed) {
             this.gui.open();
         } else {
             this.gui.close();
         }
-        console.log(`GUI ${this.gui.closed ? 'closed' : 'opened'}`); // Debug log
     }
     
     // Method to destroy the GUI
