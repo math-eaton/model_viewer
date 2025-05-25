@@ -251,8 +251,6 @@ export function horseLoader(containerId, guiCallbacks = null) {
                 
                 // Update camera setup with new positioning
                 setupResponsiveCamera(obj, clone, currentModel);
-                
-                console.log(`🔄 CLONE DISTANCE UPDATED for ${currentModel}: distance=${distance}, new pos=(${clone.position.x.toFixed(3)}, ${clone.position.y.toFixed(3)}, ${clone.position.z.toFixed(3)})`);
             }
             renderer.render(scene, camera);
         });
@@ -280,7 +278,6 @@ export function horseLoader(containerId, guiCallbacks = null) {
         
         // Mobile control callbacks
         guiCallbacks.setCallback('onToggleAscii', (enabled) => {
-            // Simulate 'A' key press
             isAsciiEnabled = enabled;
             const container = document.getElementById(containerId);
 
@@ -378,6 +375,15 @@ export function horseLoader(containerId, guiCallbacks = null) {
         effect.setSize(window.innerWidth, window.innerHeight);
         effect.domElement.style.color = 'blue';
         effect.domElement.style.backgroundColor = 'white';
+        
+        // Ensure ASCII effect has the same positioning as the WebGL renderer
+        // effect.domElement.style.position = 'absolute';
+        // effect.domElement.style.top = '0';
+        // effect.domElement.style.left = '0';
+        // effect.domElement.style.margin = '0';
+        // effect.domElement.style.padding = '0';
+        // effect.domElement.style.border = 'none';
+        // effect.domElement.style.display = 'block';
 
         // OrbitControls (will be properly configured when model loads)
         controls = new OrbitControls(camera, renderer.domElement);
@@ -491,12 +497,6 @@ export function horseLoader(containerId, guiCallbacks = null) {
         const scaledSize = scaledBoundingBox.getSize(new THREE.Vector3());
         const scaledMaxAxis = Math.max(scaledSize.x, scaledSize.y, scaledSize.z);
         
-        console.log(`✅ SCALING RESULT for ${name}:
-            📏 Original max dimension: ${maxAxis.toFixed(3)}
-            🎯 Target size: ${targetSize}
-            📐 Scale factor applied: ${scaleFactor.toFixed(3)}
-            ✨ Final max dimension: ${scaledMaxAxis.toFixed(3)}
-            ${scaledMaxAxis < 1.2 && scaledMaxAxis > 0.8 ? '✅ SUCCESS: Model properly normalized!' : '⚠️ WARNING: Model may not be properly normalized'}`);
 
         // Clone the object
         const clone = obj.clone();
@@ -540,11 +540,6 @@ export function horseLoader(containerId, guiCallbacks = null) {
         );
         clone.rotation.set(cloneRot.x, cloneRot.y, cloneRot.z);
         
-        console.log(`🔄 CLONE POSITIONING for ${name}:
-            📍 Base distance multiplier: ${baseDistance}
-            📐 Applied scale factor: ${scaleFactor.toFixed(3)}
-            🎯 Final clone pos: (${(clonePos.x * scaleFactor).toFixed(3)}, ${(clonePos.y * scaleFactor).toFixed(3)}, ${(clonePos.z * scaleFactor).toFixed(3)})
-            ${scaleFactor < 0.1 ? '⚠️ Large scaling down applied' : scaleFactor > 3 ? '⚠️ Large scaling up applied' : '✅ Moderate scaling applied'}`);
 
         // Apply the same blending mode to the clone
         clone.traverse(function (child) {
@@ -709,16 +704,6 @@ export function horseLoader(containerId, guiCallbacks = null) {
         
         // Configure orbit controls based on actual model size and weighted center
         setupOrbitControls(combinedCenter, maxDim, finalDistance, isMobile);
-        
-        console.log(`📸 CAMERA SETUP for ${name}:
-            👥 Original vertices: ${objData.vertexCount} | Clone vertices: ${cloneData.vertexCount}
-            🎯 Weighted center: (${combinedCenter.x.toFixed(3)}, ${combinedCenter.y.toFixed(3)}, ${combinedCenter.z.toFixed(3)})
-            📏 Combined size: (${combinedSize.x.toFixed(3)}, ${combinedSize.y.toFixed(3)}, ${combinedSize.z.toFixed(3)})
-            📐 Max dimension: ${maxDim.toFixed(3)}
-            🔍 Bounding radius: ${(maxDim * 0.5).toFixed(3)}
-            📍 Camera distance: ${finalDistance.toFixed(3)}
-            📷 Camera position: (${camera.position.x.toFixed(3)}, ${camera.position.y.toFixed(3)}, ${camera.position.z.toFixed(3)})
-            ${maxDim > 2.0 ? '⚠️ Model seems large - may appear zoomed out' : maxDim < 0.5 ? '⚠️ Model seems small - may appear zoomed in' : '✅ Model size looks good'}`);
     }
 
     function setupOrbitControls(target, modelSize, cameraDistance, isMobile) {

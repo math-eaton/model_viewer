@@ -110,21 +110,11 @@ function switchBackgroundColor() {
 // Expose switchBackgroundColor to global scope for GUI access
 window.switchBackgroundColor = switchBackgroundColor;
 
-// change cursor on mousedown and mouseup
-function setupCustomCursor() {
-  document.addEventListener('mousedown', () => {
-    document.body.style.cursor = 'url("../cursor/arrow.cur"), auto';
-  });
-  document.addEventListener('mouseup', () => {
-    document.body.style.cursor = 'auto';
-  });
-}
 
 // Execute functions when the DOM loads
 document.addEventListener("DOMContentLoaded", () => {
   changeBackgroundColor();
   loadRandomVisualization();
-  setupCustomCursor();
     
   // Add keyboard shortcut to toggle GUI (G key)
   document.addEventListener('keydown', (event) => {
@@ -147,12 +137,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Add event listeners to the refresh buttons
 // document.getElementById('refresh').addEventListener('click', switchVisualization);
-document.getElementById('colorwheel').addEventListener('click', switchBackgroundColor);
-colorwheel.addEventListener('touchstart', (event) => {
-  event.preventDefault();
-  switchBackgroundColor();
+// document.getElementById('colorwheel').addEventListener('click', switchBackgroundColor);
+// colorwheel.addEventListener('touchstart', (event) => {
+//   event.preventDefault();
+//   switchBackgroundColor();
   // console.log("Touchstart event triggered"); // Debugging
-});
+// });
 
 // copy email to clipboard and show a temporary message
 function copyEmailToClipboard(event, email) {
