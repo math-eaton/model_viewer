@@ -1,4 +1,3 @@
-
 html {
   height: 100%;
   text-transform: lowercase;
@@ -100,4 +99,13 @@ button {
 
 .figure {
   mix-blend-mode: hue;
+}
+
+.hide-cursor, .hide-cursor *, .hide-cursor *:hover {
+  cursor: none !important;
+}
+
+/* Always show cursor over dat.gui controls */
+.hide-cursor .dg, .hide-cursor .dg *, .hide-cursor .dg *:hover {
+  cursor: default !important;
 }

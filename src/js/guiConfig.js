@@ -31,7 +31,9 @@ export class GuiConfig {
             cloneOpacity: 0.5,
             cloneDistance: 1.0,
             mixBlendMode: 'hue',
-            selectedModel: 'horse'
+            selectedModel: 'horse',
+            hideCursor: false, // Desktop-only: toggle to hide cursor
+            hideUI: false // Toggle to hide UI (and cursor) - Esc to show
         };
         
         // Mobile controls (interactive toggles)
@@ -185,6 +187,30 @@ export class GuiConfig {
                 }
             });
 
+        // toggle UI option if on desktop
+        if (!this.isMobileDevice()) {
+            fxFolder.add(this.config, 'hideUI')
+                .name('tg ui (esc)')
+                .onChange((value) => {
+                    if (value) {
+                        document.body.classList.add('hide-cursor');
+                        this.container.style.display = 'none';
+                    } else {
+                        document.body.classList.remove('hide-cursor');
+                        this.container.style.display = '';
+                    }
+                });
+            // Listen for Escape key to restore UI
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && this.config.hideUI) {
+                    this.config.hideUI = false;
+                    document.body.classList.remove('hide-cursor');
+                    this.container.style.display = '';
+                    this.gui.updateDisplay();
+                }
+            });
+        }
+
         fxFolder.add(this.config, 'mixBlendMode', ['hue', 'saturation', 'exclusion', 'luminosity', 'color', 'multiply', 'screen', 'overlay', 'darken', 'lighten', 'difference'])
             .name('Blend Mode')
             .onChange((value) => {
@@ -247,5 +273,10 @@ export class GuiConfig {
             this.container.parentNode.removeChild(this.container);
         }
         this.gui.destroy();
+    }
+
+    // Utility to detect mobile devices
+    isMobileDevice() {
+        return (typeof window !== 'undefined') && (Math.min(window.innerWidth, window.innerHeight) < 768);
     }
 }
