@@ -1,11 +1,16 @@
-////////
-// import { horseLoader } from "./modelviewer.js";
-import { pointCloudLoader } from "./cloudviewer.js";
+import { horseLoader } from "./modelviewer.js";
+import { GuiConfig } from "./guiConfig.js";
+// import { pointCloudLoader } from "./cloudviewer.js";
+
 const isMobile = Math.min(window.innerWidth, window.innerHeight) < 768;
+
+// Initialize GUI configuration
+let guiConfig = null;
 
 // visualizations with their respective container IDs
 const visualizations = [
-  { func: pointCloudLoader, container: "modelContainer1" },
+  // { func: pointCloudLoader, container: "modelContainer1", supportsGui: false },
+  { func: horseLoader, container: "modelContainer1", supportsGui: true },
 ];
 
 
@@ -45,7 +50,7 @@ function loadRandomVisualization() {
     newVisualization = visualizationSet[randomIndex];
   } while (activeVisualization && newVisualization.container === activeVisualization.container);
 
-  const { func, container } = newVisualization;
+  const { func, container, supportsGui } = newVisualization;
   const containerElement = document.getElementById(container);
 
   if (containerElement) {
@@ -54,8 +59,23 @@ function loadRandomVisualization() {
       document.getElementById(activeVisualization.container).style.display = 'none';
     }
     containerElement.style.display = 'block';
-    func(container);
-    activeVisualization = { func, container };
+    
+    // Initialize or destroy GUI based on visualization support
+    if (supportsGui) {
+      if (!guiConfig) {
+        guiConfig = new GuiConfig();
+      }
+      // Pass the GUI callbacks to the visualization function
+      func(container, guiConfig);
+    } else {
+      // If visualization doesn't support GUI, hide it and call function without GUI
+      if (guiConfig) {
+        guiConfig.toggleVisibility();
+      }
+      func(container);
+    }
+    
+    activeVisualization = { func, container, supportsGui };
   } else {
     console.error(`Container with ID ${container} not found`);
     if (isAboutPage) {
@@ -72,7 +92,7 @@ function loadRandomVisualization() {
 
       defaultContainerElement.style.display = 'block';
       asciiHearts(defaultContainer);
-      activeVisualization = { func: asciiHearts, container: defaultContainer };
+      activeVisualization = { func: asciiHearts, container: defaultContainer, supportsGui: false };
     }
   }
 }
@@ -80,6 +100,10 @@ function loadRandomVisualization() {
 // switch to a new random background color
 function switchBackgroundColor() {
   changeBackgroundColor();
+  // Update GUI to reflect the new background color if GUI exists
+  if (guiConfig) {
+    guiConfig.updateConfig('backgroundColor', activeColor);
+  }
 }
 
 // change cursor on mousedown and mouseup
@@ -97,6 +121,24 @@ document.addEventListener("DOMContentLoaded", () => {
   changeBackgroundColor();
   loadRandomVisualization();
   setupCustomCursor();
+  
+  document.body.appendChild(testButton);
+  
+  // Add keyboard shortcut to toggle GUI (G key)
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'G' || event.key === 'g') {
+      console.log('G key pressed'); // Debug log
+      if (guiConfig && activeVisualization && activeVisualization.supportsGui) {
+        console.log('Toggling GUI visibility'); // Debug log
+        guiConfig.toggleVisibility();
+      } else if (!activeVisualization || !activeVisualization.supportsGui) {
+        console.log('GUI controls are not available for the current visualization');
+      } else {
+        console.log('GUI config not initialized'); // Debug log
+      }
+    }
+  });
+  
   // window.addEventListener('resize', eyeState);
   // document.getElementById('visible').addEventListener('click', toggleTextVisibility);
 });

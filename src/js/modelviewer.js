@@ -3,13 +3,14 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { AsciiEffect } from 'three/examples/jsm/effects/AsciiEffect.js';
 
-export function horseLoader(containerId) {
+export function horseLoader(containerId, guiCallbacks = null) {
     let scene, camera, renderer, controls, pivot, effect;
     let animationFrameId;
     let isRotationEnabled = true;
     let wireframe = false;
     let isAsciiEnabled = false; // Start with regular renderer
     let asciiAdded = false; // Track whether the AsciiEffect DOM element is added
+    let directionalLight, ambientLight; // Store light references for GUI control
 
     // Event listener to toggle the Ascii effect on/off with the "A" key
     window.addEventListener('keydown', (event) => {
@@ -51,16 +52,115 @@ export function horseLoader(containerId) {
     });
 
     const models = [
-        // { name: 'horse', url: '/obj/horse.obj', cameraPosition: { desktop: [-90, 0, 0], mobile: [-100, 5, 10000] } },
+        { name: 'horse', url: 'obj/horse.obj', cameraPosition: { desktop: [-90, 0, 0], mobile: [-100, 5, 10000] } },
         // { name: 'hand', url: '/obj/hand.obj', cameraPosition: { desktop: [-120, -50, 200], mobile: [-20, 15, 500] } },
         // { name: 'bunny', url: '/model_viewer/obj/bunny_scaled.obj', cameraPosition: { desktop: [-1, 50, 200], mobile: [-20, 15, 500] } }
-        { name: 'door', url: '/model_viewer/obj/door.obj', cameraPosition: { desktop: [-1, 50, 200], mobile: [-20, 15, 500] } }
+        // { name: 'door', url: '/model_viewer/obj/door.obj', cameraPosition: { desktop: [-1, 50, 200], mobile: [-20, 15, 500] } }
 
 
     ];
 
     function getRandomModel() {
         return models[Math.floor(Math.random() * models.length)];
+    }
+
+    function setupGuiCallbacks(guiCallbacks) {
+        // Background color callback
+        guiCallbacks.setCallback('onBackgroundColorChange', (color) => {
+            document.body.style.backgroundColor = color;
+        });
+        
+        // Light color callback
+        guiCallbacks.setCallback('onLightColorChange', (color) => {
+            directionalLight.color.setHex(color.replace('#', '0x'));
+        });
+        
+        // Light intensity callback
+        guiCallbacks.setCallback('onLightIntensityChange', (intensity) => {
+            directionalLight.intensity = intensity;
+        });
+        
+        // Ambient light intensity callback
+        guiCallbacks.setCallback('onAmbientLightIntensityChange', (intensity) => {
+            ambientLight.intensity = intensity;
+        });
+        
+        // Model color callback
+        guiCallbacks.setCallback('onModelColorChange', (color) => {
+            if (pivot.children.length > 0 && pivot.children[0].children) {
+                pivot.children[0].traverse(function (child) {
+                    if (child.isMesh) {
+                        child.material.color.setHex(color.replace('#', '0x'));
+                    }
+                });
+            }
+        });
+        
+        // Model opacity callback
+        guiCallbacks.setCallback('onModelOpacityChange', (opacity) => {
+            if (pivot.children.length > 0 && pivot.children[0].children) {
+                pivot.children[0].traverse(function (child) {
+                    if (child.isMesh) {
+                        child.material.opacity = opacity;
+                    }
+                });
+            }
+        });
+        
+        // Clone color callback
+        guiCallbacks.setCallback('onCloneColorChange', (color) => {
+            if (pivot.children.length > 1 && pivot.children[1].children) {
+                pivot.children[1].traverse(function (child) {
+                    if (child.isMesh) {
+                        child.material.color.setHex(color.replace('#', '0x'));
+                    }
+                });
+            }
+        });
+        
+        // Clone opacity callback
+        guiCallbacks.setCallback('onCloneOpacityChange', (opacity) => {
+            if (pivot.children.length > 1 && pivot.children[1].children) {
+                pivot.children[1].traverse(function (child) {
+                    if (child.isMesh) {
+                        child.material.opacity = opacity;
+                    }
+                });
+            }
+        });
+        
+        // Mix-blend-mode callback
+        guiCallbacks.setCallback('onMixBlendModeChange', (mode) => {
+            // Apply the mix-blend-mode to .figure elements
+            const figureElements = document.querySelectorAll('.figure');
+            figureElements.forEach(element => {
+                element.style.mixBlendMode = mode;
+            });
+            
+            // Also update the .hue-blend class dynamically
+            const hueBlendElements = document.querySelectorAll('.hue-blend');
+            hueBlendElements.forEach(element => {
+                element.style.mixBlendMode = mode;
+            });
+        });
+    }
+
+    function syncInitialValues(guiCallbacks) {
+        // Get current background color from body
+        const currentBgColor = document.body.style.backgroundColor || '#4c90d9';
+        
+        // Sync with GUI
+        guiCallbacks.syncWithVisualization({
+            backgroundColor: currentBgColor,
+            lightColor: '#ffffff',
+            lightIntensity: 44,
+            ambientLightIntensity: 5,
+            modelColor: '#00EB79',
+            cloneColor: '#c91515',
+            modelOpacity: 0.98,
+            cloneOpacity: 0.0,
+            mixBlendMode: 'hue'
+        });
     }
 
     function init() {
@@ -97,12 +197,19 @@ export function horseLoader(containerId) {
         controls.maxDistance = 4.5;
 
         // Light
-        const ambientLight = new THREE.AmbientLight(0x404040, 5);
+        ambientLight = new THREE.AmbientLight(0x404040, 5);
         scene.add(ambientLight);
 
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 44);
+        directionalLight = new THREE.DirectionalLight(0xffffff, 44);
         directionalLight.position.set(5, 5, 5).normalize();
         scene.add(directionalLight);
+        
+        // Setup GUI callbacks if provided
+        if (guiCallbacks) {
+            setupGuiCallbacks(guiCallbacks);
+            // Sync initial values with GUI
+            syncInitialValues(guiCallbacks);
+        }
 
         // Create a pivot group
         pivot = new THREE.Group();
