@@ -119,9 +119,9 @@ export function horseLoader(containerId, guiCallbacks = null) {
     });
 
     const models = [
-        { name: 'horse', url: 'obj/horse.obj', cameraPosition: { desktop: [-90, 0, 0], mobile: [-100, 5, 10000] } },
-        { name: 'bunny', url: 'obj/bunny.obj', cameraPosition: { desktop: [-1, 50, 200], mobile: [-20, 15, 500] } },
-        { name: 'hand', url: 'obj/hand.obj', cameraPosition: { desktop: [-120, -50, 200], mobile: [-20, 15, 500] } },
+        { name: 'horse', url: 'obj/horse_d.obj', cameraPosition: { desktop: [-90, 0, 0], mobile: [-100, 5, 10000] } },
+        { name: 'bunny', url: 'obj/bunny_d.obj', cameraPosition: { desktop: [-1, 50, 200], mobile: [-20, 15, 500] } },
+        { name: 'hand', url: 'obj/hand_d.obj', cameraPosition: { desktop: [-120, -50, 200], mobile: [-20, 15, 500] } },
     ];
 
     function getRandomModel() {
