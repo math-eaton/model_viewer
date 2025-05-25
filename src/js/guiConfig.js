@@ -91,6 +91,9 @@ export class GuiConfig {
                 }
             });
         
+        // Close the color folder by default
+        colorFolder.close();
+        
         const lightingFolder = this.gui.addFolder('Lighting');
         lightingFolder.addColor(this.config, 'lightColor')
             .name('Light Color')
@@ -117,12 +120,14 @@ export class GuiConfig {
             });
             
         lightingFolder.addColor(this.config, 'dropShadowColor')
-            .name('Drop Shadow Color')
-            .onChange((value) => {
+            .name('Drop Shadow')            .onChange((value) => {
                 if (this.callbacks.onDropShadowColorChange) {
                     this.callbacks.onDropShadowColorChange(value);
                 }
             });
+        
+        // Close the lighting folder by default
+        lightingFolder.close();
         
         // Model controls
         const modelFolder = this.gui.addFolder('Model');
@@ -159,6 +164,9 @@ export class GuiConfig {
                     this.callbacks.onCloneDistanceChange(value);
                 }
             });
+        
+        // Close the model folder by default
+        modelFolder.close();
         
         
         const fxFolder = this.gui.addFolder('fx');
@@ -228,6 +236,9 @@ export class GuiConfig {
         };
         fxFolder.add(randomColorButton, 'randomize')
             .name('Random Background Color');
+        
+        // Close the fx folder by default
+        fxFolder.close();
         
     }
     
